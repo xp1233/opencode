@@ -4,15 +4,16 @@ FROM python:3.9-slim
 # 设置工作目录
 WORKDIR /app
 
-# 安装依赖
-RUN apt-get update && apt-get install -y --no-install-recommends git \
+# 1. 替换 Debian 软件源为阿里云国内源
+RUN sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 
-# 克隆代码（如果是自动构建，这一步其实是多余的，因为代码已经被拉取到构建环境了）
-# 所以我们直接复制当前目录的代码
-COPY . .
+# 2. 使用国内加速地址克隆 GitHub 代码
+RUN git clone https://ghproxy.com/https://github.com/xp1233/opencode.git .
 
-# 安装 Python 依赖
+# 3. 使用国内 PyPI 源安装 Python 依赖
 RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # 暴露端口
